@@ -1,4 +1,4 @@
-from os import path
+from os import path, name
 from sys import argv, stderr, exit
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load

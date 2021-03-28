@@ -59,10 +59,11 @@ class TextThread (Thread):
                 return
             self._queue.put((isSuccess, db_rows))
         except Exception as e:
+            print(f'{argv[0]}: {e}', file=stderr)
             if self._shouldStop:
                 return
             # queue.put(False, "[Errno 111] Connection refused")
-            self._queue.put((False, e))
+            # self._queue.put((False, e))
 
 
 def main(argv):
@@ -268,13 +269,13 @@ def main(argv):
             # open details when user double clicks or hits enter on a list widget item
             list_box.itemActivated.connect(retrieveDetails)
 
-            # retrieveText()
-            global textThread  # perhaps this should be deleted?
-            if textThread is not None:
-                textThread.stop()
-            packet = ["overviews", "", "", "", ""]
-            textThread = TextThread(host, port, packet, queue)
-            textThread.start()
+            retrieveText()
+            # global textThread  # perhaps this should be deleted?
+            # if textThread is not None:
+            #     textThread.stop()
+            # packet = ["overviews", "", "", "", ""]
+            # textThread = TextThread(host, port, packet, queue)
+            # textThread.start()
 
             timer = QTimer()
             timer.timeout.connect(pollQueue)

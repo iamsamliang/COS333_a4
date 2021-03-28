@@ -94,6 +94,7 @@ class Database():
                     row = cursor.fetchone()
                 isSuccess = True
 
+            cursor.close()
             return isSuccess, message
         except Exception as e:
             raise Exception(

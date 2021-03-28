@@ -210,7 +210,6 @@ def main(argv):
     window.resize(screenSize.width()//2, screenSize.height()//2)
 
     window.show()
-    exit(app.exec_())
 
     while True:
         try:

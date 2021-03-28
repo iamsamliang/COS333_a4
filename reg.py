@@ -172,6 +172,7 @@ def main(argv):
 
     # extracts the input in each of the 4 lines as the text is written, create a socket connection with regserver.py, and send the input to regserver.py. Retrieve the return value from regserver.py and close socket connection
     def retrieveText():
+        print("Sent command: getOverviews")
         global textThread
         dept = str(deptLine.text())
         course_num = str(courseNumLine.text())
@@ -186,6 +187,7 @@ def main(argv):
         textThread.start()
 
     def retrieveDetails():
+        print("Sent command: getDetails")
         # get the courseId from the selection
         selected_str = str(list_box.currentItem().text())
         # selection = selectedRow[0]

@@ -63,7 +63,7 @@ class TextThread (Thread):
             if self._shouldStop:
                 return
             # queue.put(False, "[Errno 111] Connection refused")
-            self._queue.put((False, e))
+            self._queue.put((False, "[Errno 111] Connection refused"))
 
 
 def main(argv):

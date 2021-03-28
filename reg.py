@@ -6,7 +6,7 @@ from os import path
 from sys import argv, stderr, exit
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load
-from threading import thread
+from threading import Thread
 from queue import Queue
 from sqlite3 import connect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame
@@ -21,9 +21,9 @@ import textwrap
 from database_handler import create_sql_command
 
 textThread = None
-# regserver.py handles database
 
 
+# Gets all classes in the listbox
 class TextThread (Thread):
 
     def __init__(self, host, port, packet, queue):
@@ -34,6 +34,9 @@ class TextThread (Thread):
         self._queue = queue
         self._shouldStop = False
 
+    def stop(self):
+        self._shouldStop = True
+
     def run(self):
         # send the values to regserver.py
         # keep everything in a try loop in case multiple signals come in so doesn't terminate
@@ -41,7 +44,7 @@ class TextThread (Thread):
             sock = socket()
             sock.connect((self._host, self._port))
             out_flow = sock.makefile(mode='wb')
-            dump(self_packet, out_flow)
+            dump(self._packet, out_flow)
             out_flow.flush()
 
             # retrieve the values from regserver.py
@@ -54,11 +57,12 @@ class TextThread (Thread):
 
             if self._shouldStop:
                 return
-            queue.put(isSuccess, db_rows)
-        except:
+            self._queue.put((isSuccess, db_rows))
+        except Exception as e:
             if self._shouldStop:
                 return
-            queue.put(False, "[Errno 111] Connection refused")
+            # queue.put(False, "[Errno 111] Connection refused")
+            self._queue.put((False, e))
 
 
 def main(argv):
@@ -75,6 +79,8 @@ def main(argv):
     # get the host and port
     host = argv[1]
     port = int(argv[2])
+
+    queue = Queue()
 
     # initiation code line
     app = QApplication(argv)
@@ -164,9 +170,7 @@ def main(argv):
     screenSize = QDesktopWidget().screenGeometry()
     window.resize(screenSize.width()//2, screenSize.height()//2)
 
-    # database code
-    # try:
-    # extracts the input in each of the 4 lines when the text is written, create a socket connection with regserver.py, and send the input to regserver.py. Retrieve the return value from regserver.py and close socket connection
+    # extracts the input in each of the 4 lines as the text is written, create a socket connection with regserver.py, and send the input to regserver.py. Retrieve the return value from regserver.py and close socket connection
     def retrieveText():
         global textThread
         dept = str(deptLine.text())
@@ -178,7 +182,7 @@ def main(argv):
         packet = ["overviews", dept, course_num, area, title]
         if textThread is not None:
             textThread.stop()
-        textThread = TextThread(host, port, packet)
+        textThread = TextThread(host, port, packet, queue)
         textThread.start()
 
     def retrieveDetails():
@@ -230,14 +234,14 @@ def main(argv):
 
             else:
                 # clear list box and put appropriate items
-            list_box.clear()
-            for row in db_rows:
-                line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
-                    str(row[0]).strip(), str(row[1]).strip(), str(row[2]).strip(), str(row[3]).strip(), str(row[4]).strip())
-                list_box.addItem(line_string)
+                list_box.clear()
+                for row in db_rows:
+                    line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
+                        str(row[0]).strip(), str(row[1]).strip(), str(row[2]).strip(), str(row[3]).strip(), str(row[4]).strip())
+                    list_box.addItem(line_string)
 
-            # automatically highlight first row each time
-            list_box.setCurrentRow(0)
+                # automatically highlight first row each time
+                list_box.setCurrentRow(0)
 
     timer = QTimer()
     timer.timeout.connect(pollQueue)
@@ -269,7 +273,7 @@ def main(argv):
             if textThread is not None:
                 textThread.stop()
             packet = ["overviews", "", "", "", ""]
-            textThread = TextThread(host, port, packet)
+            textThread = TextThread(host, port, packet, queue)
             textThread.start()
 
             timer = QTimer()

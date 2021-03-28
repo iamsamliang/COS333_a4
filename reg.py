@@ -59,7 +59,7 @@ class TextThread (Thread):
                 return
             self._queue.put((isSuccess, db_rows))
         except Exception as e:
-            print(f'{argv[0]}: {e}', file=stderr)
+            # print(f'{argv[0]}: {e}', file=stderr)
             if self._shouldStop:
                 return
             # queue.put(False, "[Errno 111] Connection refused")

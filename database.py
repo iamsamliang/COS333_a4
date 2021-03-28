@@ -39,10 +39,11 @@ class Database():
             cursor.close()
             return rows
         except Exception as e:
+            print(f"{argv[0]}: {e}", file=stderr)
             cursor.close()
             self.disconnect()
-            raise Exception(
-                'A server error occurred. Please contact the system administrator.')
+            raise Exception()
+            # raise Exception('A server error occurred. Please contact the system administrator.')
 
     def class_details(self, class_id):
         try:
@@ -100,7 +101,8 @@ class Database():
             cursor.close()
             return isSuccess, message
         except Exception as e:
+            print(f"{argv[0]}: {e}", file=stderr)
             cursor.close()
             self.disconnect()
-            raise Exception(
-                'A server error occurred. Please contact the system administrator.')
+            # raise Exception('A server error occurred. Please contact the system administrator.')
+            raise Exception()

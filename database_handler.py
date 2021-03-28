@@ -16,24 +16,24 @@ def create_sql_command(args):
 
     arg_arr = []
 
-    if args[1]:
+    if args[0]:
         sql_command += " AND dept LIKE ? ESCAPE '#'"
+        result = special_char_mod(args[0])
+        arg_arr.append("%" + result + "%")
+
+    if args[1]:
+        sql_command += " AND coursenum LIKE ? ESCAPE '#'"
         result = special_char_mod(args[1])
         arg_arr.append("%" + result + "%")
 
     if args[2]:
-        sql_command += " AND coursenum LIKE ? ESCAPE '#'"
+        sql_command += " AND area LIKE ? ESCAPE '#'"
         result = special_char_mod(args[2])
         arg_arr.append("%" + result + "%")
 
     if args[3]:
-        sql_command += " AND area LIKE ? ESCAPE '#'"
-        result = special_char_mod(args[3])
-        arg_arr.append("%" + result + "%")
-
-    if args[4]:
         sql_command += " AND title LIKE ? ESCAPE '#'"
-        result = special_char_mod(args[4])
+        result = special_char_mod(args[3])
         arg_arr.append("%" + result + "%")
 
     sql_command += " ORDER BY dept ASC, coursenum ASC, classid ASC"

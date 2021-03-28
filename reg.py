@@ -23,6 +23,7 @@ from database_handler import create_sql_command
 textThread = None
 # regserver.py handles database
 
+
 class TextThread (Thread):
 
     def __init__(self, host, port, packet, queue):
@@ -50,6 +51,7 @@ class TextThread (Thread):
 
             # close connection
             sock.close()
+
             if self._shouldStop:
                 return
             queue.put(isSuccess, db_rows)
@@ -57,6 +59,7 @@ class TextThread (Thread):
             if self._shouldStop:
                 return
             queue.put(False, "[Errno 111] Connection refused")
+
 
 def main(argv):
     # argparse is user-interface related code
@@ -98,7 +101,7 @@ def main(argv):
     list_box.setFont(QFont("Courier", 10))
 
     # submit button
-   # submit_but = QPushButton("Submit")
+    # submit_but = QPushButton("Submit")
 
     top_layout = QGridLayout()
     top_layout.setSpacing(0)
@@ -226,7 +229,7 @@ def main(argv):
             msgBox = QMessageBox.critical(window, 'Server Error', db_rows)
 
             else:
-            # clear list box and put appropriate items
+                # clear list box and put appropriate items
             list_box.clear()
             for row in db_rows:
                 line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
@@ -238,7 +241,7 @@ def main(argv):
 
     timer = QTimer()
     timer.timeout.connect(pollQueue)
-    timer.setInterval(100) #milliseconds
+    timer.setInterval(100)  # milliseconds
     timer.start()
 
     window.show()
@@ -260,9 +263,9 @@ def main(argv):
 
             # open details when user double clicks or hits enter on a list widget item
             list_box.itemActivated.connect(retrieveDetails)
-            
+
             # retrieveText()
-            global textThread #perhaps this should be deleted?
+            global textThread  # perhaps this should be deleted?
             if textThread is not None:
                 textThread.stop()
             packet = ["overviews", "", "", "", ""]
@@ -271,7 +274,7 @@ def main(argv):
 
             timer = QTimer()
             timer.timeout.connect(pollQueue)
-            timer.setInterval(100) #milliseconds
+            timer.setInterval(100)  # milliseconds
             timer.start()
 
             window.show()
@@ -284,15 +287,6 @@ def main(argv):
                 window, 'Server Error', str(e))
             window.show()
             exit(app.exec_())
-
-
-# exit(2) case handled by arg_parse module, exit(1) case handled on lines 11-18
-# If some other program has corrupted the reg.sqlite database file
-# (missing table, missing field, etc.) such that a database query
-# performed by reg.py throws an exception, then reg.py must write
-# the message that is within that exception to stderr. exit status 1
-    # except Exception as e:
-    #     print(f'{argv[0]}: {e}', file=stderr)
 
 
 if __name__ == '__main__':

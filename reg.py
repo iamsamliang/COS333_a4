@@ -226,7 +226,7 @@ def main(argv):
             isSuccess, db_rows = queue.get()
 
             if not isSuccess:
-            msgBox = QMessageBox.critical(window, 'Server Error', db_rows)
+                msgBox = QMessageBox.critical(window, 'Server Error', db_rows)
 
             else:
                 # clear list box and put appropriate items

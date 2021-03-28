@@ -4,7 +4,10 @@ Name: Sam Liang
 Partner Name: Sumanth Maddirala
 Assistance: none
 Sources Used: Lecture 13 and 14c handouts and lectures, assignment specifications, our own assignment 2 code
+Hours spent: 16
 
 Sam contributions: Wrote the code for the child processes in regserver.py and regdetails.py, specifically developing the joinChildren method. He also helped fine tune and debug the implementation of the threading in reg.py, as well as the testing module and htmlcov file and error handling.
 
 Sumanth contributions: Introduced the delay argument in the regserver.py file and developed the Text and Details threading classes, including adding the queue polling methods and accompanying timer to support the threading. Lastly, he also replaced the Submit button with text change connections. 
+
+Feedback: In this assignment, we learned about how to implement threads and delays in Python programs in order to counteract the lagginess of the GUI. We also began to use timers and queues in Python, as well as classes (we made a textThread class). We also reviewed GUI programming commands, such as textChanged. Overall, this assignment was helpful in learning how to implement concurrent processes and the Lecture 13 and 14 handouts were incredibly helpful in completing this assignment. 

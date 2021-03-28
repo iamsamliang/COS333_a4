@@ -3,6 +3,7 @@ from sys import argv, stderr, exit
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load
 from time import process_time
+from multiprocessing import Process, active_children, cpu_count
 from sqlite3 import connect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame
 from PyQt5.QtWidgets import QLabel, QGridLayout, QPushButton
@@ -47,9 +48,11 @@ def consumeCpuTime(delay):
     i = 0
     initialTime = process_time()
     while (process_time() - initialTime)
-        i += 1 # Do a nonsensical computation.
+    i += 1  # Do a nonsensical computation.
 
 # handle getDetails
+
+
 def handleDetails(sock, cursor, args):
     print("Received command: getDetails")
 

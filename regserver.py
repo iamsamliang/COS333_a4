@@ -139,8 +139,8 @@ def handleDetails(sock, delay, class_id):
         out_flow.flush()
 
         # close database cconnection
-        database.disconnect()
-        print("Closed Database Connection")
+        # database.disconnect()
+        # print("Closed Database Connection")
 
         # close socket
         sock.close()

@@ -39,6 +39,8 @@ class Database():
             cursor.close()
             return rows
         except Exception as e:
+            cursor.close()
+            self.disconnect()
             raise Exception(
                 'A server error occurred. Please contact the system administrator.')
 
@@ -98,5 +100,7 @@ class Database():
             cursor.close()
             return isSuccess, message
         except Exception as e:
+            cursor.close()
+            self.disconnect()
             raise Exception(
                 'A server error occurred. Please contact the system administrator.')

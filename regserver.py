@@ -16,20 +16,29 @@ import textwrap
 from database_handler import create_sql_command
 
 
+def consumeCpuTime(delay):
+    i = 0
+    initialTime = process_time()
+    while (process_time() - initialTime)
+    i += 1  # Do a nonsensical computation.
+
 # determine whether to call handleOverviews or handleDetails
-def handler(sock, cursor):
+
+
+def handler(sock, cursor, delay):
     in_flow = sock.makefile(mode="rb")
     package = load(in_flow)
     if package[0] == "overviews":
-        handleOverviews(sock, cursor, package)
+        handleOverviews(sock, cursor, delay, package)
     else:
-        handleDetails(sock, cursor, package)
+        handleDetails(sock, cursor, delay, package)
 
 
 # handle getOverviews:
-def handleOverviews(sock, cursor, args):
+def handleOverviews(sock, cursor, delay, args):
     print("Received command: getOverviews")
 
+    consumeCpuTime(delay)
     # args is a list that stores all the arguments needed for sql command
     # create appropriate sql command
     sql_command, arg_arr = create_sql_command(args)
@@ -44,18 +53,11 @@ def handleOverviews(sock, cursor, args):
     out_flow.flush()
 
 
-def consumeCpuTime(delay):
-    i = 0
-    initialTime = process_time()
-    while (process_time() - initialTime)
-    i += 1  # Do a nonsensical computation.
-
 # handle getDetails
-
-
-def handleDetails(sock, cursor, args):
+def handleDetails(sock, cursor, delay, args):
     print("Received command: getDetails")
 
+    consumeCpuTime(delay)
     message = ""
     isSuccess = False
 
@@ -164,7 +166,7 @@ def main(argv):
                     print("Established Database Connection")
 
                     # Handle client request
-                    handler(sock, cursor)
+                    handler(sock, cursor, delay)
 
                     # close database connection
                     cursor.close()

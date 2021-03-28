@@ -44,9 +44,9 @@ def handler(sock, cursor, delay):
     else:
         handleDetails(sock, cursor, delay, package)
 
-    cursor.close()
-    connection.close()
-    print("Closed Database Connection")
+    # cursor.close()
+    # connection.close()
+    # print("Closed Database Connection")
 
 
 # handle getOverviews:
@@ -56,9 +56,9 @@ def handleOverviews(sock, cursor, delay, args):
     consumeCpuTime(delay)
 
     # connect to database
-    connection = connect(DATABASE_NAME)
-    cursor = connection.cursor()
-    print("Established Database Connection")
+    # connection = connect(DATABASE_NAME)
+    # cursor = connection.cursor()
+    # print("Established Database Connection")
 
     # args is a list that stores all the arguments needed for sql command
     # create appropriate sql command
@@ -81,9 +81,9 @@ def handleDetails(sock, cursor, delay, args):
     consumeCpuTime(delay)
 
     # connect to database
-    connection = connect(DATABASE_NAME)
-    cursor = connection.cursor()
-    print("Established Database Connection")
+    # connection = connect(DATABASE_NAME)
+    # cursor = connection.cursor()
+    # print("Established Database Connection")
 
     message = ""
     isSuccess = False
@@ -193,9 +193,9 @@ def main(argv):
                     print('Closed socket')
                 else:
                     # connect to database
-                    # connection = connect(DATABASE_NAME)
-                    # cursor = connection.cursor()
-                    # print("Established Database Connection")
+                    connection = connect(DATABASE_NAME)
+                    cursor = connection.cursor()
+                    print("Established Database Connection")
 
                     # Handle client request
                     process = Process(target=handler, args=[
@@ -203,9 +203,9 @@ def main(argv):
                     process.start()
 
                     # close database connection
-                    # cursor.close()
-                    # connection.close()
-                    # print("Closed Database Connection")
+                    cursor.close()
+                    connection.close()
+                    print("Closed Database Connection")
 
                     # close socket
                     sock.close()

@@ -6,6 +6,8 @@ from os import path
 from sys import argv, stderr, exit
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load
+from threading import thread
+from queue import Queue
 from sqlite3 import connect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame
 from PyQt5.QtWidgets import QLabel, QGridLayout, QPushButton, QVBoxLayout, QFormLayout, QHBoxLayout
@@ -13,13 +15,48 @@ from PyQt5.QtWidgets import QLineEdit, QTextEdit, QScrollArea
 from PyQt5.QtWidgets import QSlider, QCheckBox, QRadioButton
 from PyQt5.QtWidgets import QListWidget, QDesktopWidget, QMessageBox
 from PyQt5.QtGui import QFont, QEnterEvent
-from PyQt5.QtCore import Qt, QItemSelectionModel
+from PyQt5.QtCore import Qt, QItemSelectionModel, QTimer
 import argparse
 import textwrap
 from database_handler import create_sql_command
 
+textThread = None
 # regserver.py handles database
 
+class TextThread (Thread):
+
+    def __init__(self, host, port, packet, queue):
+        Thread.__init__(self)
+        self._host = host
+        self._port = port
+        self._packet = packet
+        self._queue = queue
+        self._shouldStop = False
+
+    def run(self):
+        # send the values to regserver.py
+        # keep everything in a try loop in case multiple signals come in so doesn't terminate
+        try:
+            sock = socket()
+            sock.connect((self._host, self._port))
+            out_flow = sock.makefile(mode='wb')
+            dump(self_packet, out_flow)
+            out_flow.flush()
+
+            # retrieve the values from regserver.py
+            in_flow = sock.makefile(mode='rb')
+            isSuccess = load(in_flow)
+            db_rows = load(in_flow)
+
+            # close connection
+            sock.close()
+            if self._shouldStop:
+                return
+            queue.put(isSuccess, db_rows)
+        except:
+            if self._shouldStop:
+                return
+            queue.put(False, "[Errno 111] Connection refused")
 
 def main(argv):
     # argparse is user-interface related code
@@ -31,91 +68,6 @@ def main(argv):
     parser.add_argument(
         "port", type=int, help="the port at which the server is listening", nargs=1)
     args = parser.parse_args()
-
-    # database code
-    # try:
-    # extracts the input in each of the 4 lines when the submit button is clicked, create a socket connection with regserver.py, and send the input to regserver.py. Retrieve the return value from regserver.py and close socket connection
-    def retrieveText():
-        dept = str(deptLine.text())
-        course_num = str(courseNumLine.text())
-        area = str(areaLine.text())
-        title = str(titleLine.text())
-
-        # prepare the packet to send to regserver.py
-        packet = ["overviews", dept, course_num, area, title]
-
-        # send the values to regserver.py
-        # keep everything in a try loop in case multiple signals come in so doesn't terminate
-        try:
-            sock = socket()
-            sock.connect((host, port))
-            out_flow = sock.makefile(mode='wb')
-            dump(packet, out_flow)
-            out_flow.flush()
-
-            # retrieve the values from regserver.py
-            in_flow = sock.makefile(mode='rb')
-            isSuccess = load(in_flow)
-            db_rows = load(in_flow)
-
-            # close connection
-            sock.close()
-
-        except:
-            isSuccess = False
-            db_rows = "[Errno 111] Connection refused"
-
-        if not isSuccess:
-            msgBox = QMessageBox.critical(
-                window, 'Server Error', db_rows)
-        else:
-            # clear list box and put appropriate items
-            list_box.clear()
-            for row in db_rows:
-                line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
-                    str(row[0]).strip(), str(row[1]).strip(), str(row[2]).strip(), str(row[3]).strip(), str(row[4]).strip())
-                list_box.addItem(line_string)
-
-            # automatically highlight first row each time
-            list_box.setCurrentRow(0)
-
-    def retrieveDetails():
-        # get the courseId from the selection
-        selected_str = str(list_box.currentItem().text())
-        # selection = selectedRow[0]
-        # print(selection)
-        words = selected_str.split()
-        class_id = int(words[0])
-        packet = ["details", class_id]
-
-        # send the values to regserver.py
-        try:
-            sock = socket()
-            sock.connect((host, port))
-            out_flow = sock.makefile(mode='wb')
-            dump(packet, out_flow)
-            out_flow.flush()
-
-            # retrieve the values from regserver.py
-            in_flow = sock.makefile(mode='rb')
-            isSuccess = load(in_flow)
-            message = load(in_flow)
-
-            # close connection
-            sock.close()
-
-        except:
-            isSuccess = False
-            message = "[Errno 111] Connection refused"
-
-        if not isSuccess:
-            # display error with classid not existing in database
-            msgBox = QMessageBox.critical(
-                window, 'Server Error', message)
-        else:
-            # create and display information via messageBox
-            msgBox = QMessageBox.information(
-                window, 'Class Details', message)
 
     # get the host and port
     host = argv[1]
@@ -209,16 +161,95 @@ def main(argv):
     screenSize = QDesktopWidget().screenGeometry()
     window.resize(screenSize.width()//2, screenSize.height()//2)
 
+    # database code
+    # try:
+    # extracts the input in each of the 4 lines when the text is written, create a socket connection with regserver.py, and send the input to regserver.py. Retrieve the return value from regserver.py and close socket connection
+    def retrieveText():
+        global textThread
+        dept = str(deptLine.text())
+        course_num = str(courseNumLine.text())
+        area = str(areaLine.text())
+        title = str(titleLine.text())
+
+        # prepare the packet to send to regserver.py
+        packet = ["overviews", dept, course_num, area, title]
+        if textThread is not None:
+            textThread.stop()
+        textThread = TextThread(host, port, packet)
+        textThread.start()
+
+    def retrieveDetails():
+        # get the courseId from the selection
+        selected_str = str(list_box.currentItem().text())
+        # selection = selectedRow[0]
+        # print(selection)
+        words = selected_str.split()
+        class_id = int(words[0])
+        packet = ["details", class_id]
+
+        # send the values to regserver.py
+        try:
+            sock = socket()
+            sock.connect((host, port))
+            out_flow = sock.makefile(mode='wb')
+            dump(packet, out_flow)
+            out_flow.flush()
+
+            # retrieve the values from regserver.py
+            in_flow = sock.makefile(mode='rb')
+            isSuccess = load(in_flow)
+            message = load(in_flow)
+
+            # close connection
+            sock.close()
+
+        except:
+            isSuccess = False
+            message = "[Errno 111] Connection refused"
+
+        if not isSuccess:
+            # display error with classid not existing in database
+            msgBox = QMessageBox.critical(
+                window, 'Server Error', message)
+        else:
+            # create and display information via messageBox
+            msgBox = QMessageBox.information(
+                window, 'Class Details', message)
+
+    # our queue contains a boolean, indicating if there is an error raised or not for a key
+    # and the rows of the class details message box as the value
+    def pollQueue():
+        while not queue.empty():
+            isSuccess, db_rows = queue.get()
+
+            if not isSuccess:
+            msgBox = QMessageBox.critical(window, 'Server Error', db_rows)
+
+            else:
+            # clear list box and put appropriate items
+            list_box.clear()
+            for row in db_rows:
+                line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
+                    str(row[0]).strip(), str(row[1]).strip(), str(row[2]).strip(), str(row[3]).strip(), str(row[4]).strip())
+                list_box.addItem(line_string)
+
+            # automatically highlight first row each time
+            list_box.setCurrentRow(0)
+
+    timer = QTimer()
+    timer.timeout.connect(pollQueue)
+    timer.setInterval(100) #milliseconds
+    timer.start()
+
     window.show()
-    app.exec_()
 
     while True:
         try:
-            # retrieve values when enter is clicked in one of the line edits
-            deptLine.returnPressed.connect(retrieveText)
-            courseNumLine.returnPressed.connect(retrieveText)
-            areaLine.returnPressed.connect(retrieveText)
-            titleLine.returnPressed.connect(retrieveText)
+            # retrieve values when enter is clicked in one of the line edits (unnecessary w/ text changed)
+            # deptLine.returnPressed.connect(retrieveText)
+            # courseNumLine.returnPressed.connect(retrieveText)
+            # areaLine.returnPressed.connect(retrieveText)
+            # titleLine.returnPressed.connect(retrieveText)
 
             # retrieve values when submit button is clicked
             # submit_but.clicked.connect(retrieveText)
@@ -231,41 +262,22 @@ def main(argv):
             list_box.itemActivated.connect(retrieveDetails)
             
             # retrieveText()
-
+            global textThread #perhaps this should be deleted?
+            if textThread is not None:
+                textThread.stop()
             packet = ["overviews", "", "", "", ""]
+            textThread = TextThread(host, port, packet)
+            textThread.start()
 
-            # send the values to regserver.py
-            sock = socket()
-            sock.connect((host, port))
-            out_flow = sock.makefile(mode='wb')
-            dump(packet, out_flow)
-            out_flow.flush()
-
-            # retrieve the values from regserver.py
-            in_flow = sock.makefile(mode='rb')
-            isSuccess = load(in_flow)
-            db_rows = load(in_flow)
-
-            # close connection
-            sock.close()
-
-            if not isSuccess:
-                msgBox = QMessageBox.critical(
-                    window, 'Server Error', db_rows)
-            else:
-                # user interface: gets information from the database
-                # and prints to user
-                for row in db_rows:
-                    line_string = "{:>5}{:>4}{:>5}{:>4} {}".format(
-                        str(row[0]).strip(), str(row[1]).strip(), str(row[2]).strip(), str(row[3]).strip(), str(row[4]).strip())
-                    list_box.addItem(line_string)
-
-            # automatically highlight first row each time
-            list_box.setCurrentRow(0)
+            timer = QTimer()
+            timer.timeout.connect(pollQueue)
+            timer.setInterval(100) #milliseconds
+            timer.start()
 
             window.show()
             exit(app.exec_())
 
+        # we may need to remove this.... error is handled in the text thread i think?
         except Exception as e:
             # display error of unavailable server
             msgBox = QMessageBox.critical(

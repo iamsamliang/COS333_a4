@@ -76,7 +76,8 @@ def handleOverviews(sock, cursor, delay, args):
 
 # handle getDetails
 def handleDetails(sock, cursor, delay, args):
-    print("Received command: getDetails, and forked child process")
+    print("Forked child process")
+    print("Received command: getDetails")
 
     consumeCpuTime(delay)
 
@@ -165,6 +166,8 @@ def main(argv):
         port = int(argv[1])
         delay = int(argv[2])
         serverSock = socket()
+        print('OS:', name)
+        print('CPU count:', cpu_count())
         print('Opened server socket')
         serverSock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         serverSock.bind(('', port))  # can trigger unavailable port error

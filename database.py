@@ -13,8 +13,8 @@ class Database():
         DATABASE_NAME = 'reg.sqlite'
         if not path.isfile(DATABASE_NAME):
             print(f"{argv[0]}: database reg.sqlite not found", file=stderr)
-            raise Exception(
-                'A server error occurred. Please contact the system administrator.')
+            # raise Exception('A server error occurred. Please contact the system administrator.')
+            raise Exception()
         self._connection = connect(DATABASE_NAME)
 
     def disconnect(self):
@@ -39,10 +39,11 @@ class Database():
             cursor.close()
             return rows
         except Exception as e:
+            print(f"{argv[0]}: {e}", file=stderr)
             cursor.close()
             self.disconnect()
-            raise Exception(e)
-                # 'A server error occurred. Please contact the system administrator.')
+            raise Exception()
+            # raise Exception('A server error occurred. Please contact the system administrator.')
 
     def class_details(self, class_id):
         try:
@@ -100,7 +101,8 @@ class Database():
             cursor.close()
             return isSuccess, message
         except Exception as e:
+            print(f"{argv[0]}: {e}", file=stderr)
             cursor.close()
             self.disconnect()
-            raise Exception(e)
-                # 'A server error occurred. Please contact the system administrator.')
+            # raise Exception('A server error occurred. Please contact the system administrator.')
+            raise Exception()

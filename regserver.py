@@ -89,7 +89,7 @@ def handleOverviews(sock, delay, form_args):
         print('Closed socket in child process')
         print('Exiting child process')
     except Exception as e:
-        print(f'{argv[0]}: {e}', file=stderr)
+        # print(f'{argv[0]}: {e}', file=stderr)
         message = "A server error occurred. Please contact the system administrator."
         out_flow = sock.makefile(mode="wb")
         isSuccess = False
@@ -130,7 +130,7 @@ def handleDetails(sock, delay, class_id):
         print('Closed socket in child process')
         print('Exiting child process')
     except Exception as e:
-        print(f'{argv[0]}: {e}', file=stderr)
+        # print(f'{argv[0]}: {e}', file=stderr)
         message = "A server error occurred. Please contact the system administrator."
         out_flow = sock.makefile(mode="wb")
         isSuccess = False

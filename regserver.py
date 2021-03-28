@@ -15,16 +15,27 @@ import argparse
 import textwrap
 from database_handler import create_sql_command
 
+# If not running on MS Windows, then import some signal-related names.
+if name != 'nt':
+    from signal import signal, SIGCHLD
+
+
+# If not running on MS Windows, then define joinChildren.  The main
+# function installs it as the handler for SIGCHLD signals.
+if name != 'nt':
+    def joinChildren(signal, stackFrame):
+        # Wait for / reap all children that have exited.
+        active_children()
+
 
 def consumeCpuTime(delay):
     i = 0
     initialTime = process_time()
-    while (process_time() - initialTime)
-    i += 1  # Do a nonsensical computation.
+    while (process_time() - initialTime) < delay:
+        i += 1  # Do a nonsensical computation.
+
 
 # determine whether to call handleOverviews or handleDetails
-
-
 def handler(sock, cursor, delay):
     in_flow = sock.makefile(mode="rb")
     package = load(in_flow)
@@ -33,12 +44,22 @@ def handler(sock, cursor, delay):
     else:
         handleDetails(sock, cursor, delay, package)
 
+    cursor.close()
+    connection.close()
+    print("Closed Database Connection")
+
 
 # handle getOverviews:
 def handleOverviews(sock, cursor, delay, args):
-    print("Received command: getOverviews")
+    print("Received command: getOverviews, and forked child process")
 
     consumeCpuTime(delay)
+
+    # connect to database
+    connection = connect(DATABASE_NAME)
+    cursor = connection.cursor()
+    print("Established Database Connection")
+
     # args is a list that stores all the arguments needed for sql command
     # create appropriate sql command
     sql_command, arg_arr = create_sql_command(args)
@@ -55,9 +76,15 @@ def handleOverviews(sock, cursor, delay, args):
 
 # handle getDetails
 def handleDetails(sock, cursor, delay, args):
-    print("Received command: getDetails")
+    print("Received command: getDetails, and forked child process")
 
     consumeCpuTime(delay)
+
+    # connect to database
+    connection = connect(DATABASE_NAME)
+    cursor = connection.cursor()
+    print("Established Database Connection")
+
     message = ""
     isSuccess = False
 
@@ -128,6 +155,11 @@ def main(argv):
         "delay", type=int, help="the amount by which the server is delayed after a query is received", nargs=1)
     args = parser.parse_args()
 
+    # If not running on MS Windows, then install joinChildren as
+    # the handler for SIGCHLD signals.
+    if name != 'nt':
+        signal(SIGCHLD, joinChildren)
+
     try:
         # make this server bind a socket to this port and listen for a connection from a client
         port = int(argv[1])
@@ -161,17 +193,18 @@ def main(argv):
                     print('Closed socket')
                 else:
                     # connect to database
-                    connection = connect(DATABASE_NAME)
-                    cursor = connection.cursor()
-                    print("Established Database Connection")
+                    # connection = connect(DATABASE_NAME)
+                    # cursor = connection.cursor()
+                    # print("Established Database Connection")
 
                     # Handle client request
-                    handler(sock, cursor, delay)
+                    process = Process(target=handler, args=[sock, cursor, delay]
+                    process.start()
 
                     # close database connection
-                    cursor.close()
-                    connection.close()
-                    print("Closed Database Connection")
+                    # cursor.close()
+                    # connection.close()
+                    # print("Closed Database Connection")
 
                     # close socket
                     sock.close()
@@ -180,9 +213,9 @@ def main(argv):
             # server error exception
             except Exception as e:
                 print(f'{argv[0]}: {e}', file=stderr)
-                message = "A server error occurred. Please contact the system administrator."
-                out_flow = sock.makefile(mode="wb")
-                isSuccess = False
+                message="A server error occurred. Please contact the system administrator."
+                out_flow=sock.makefile(mode="wb")
+                isSuccess=False
                 dump(isSuccess, out_flow)
                 dump(message, out_flow)
                 out_flow.flush()

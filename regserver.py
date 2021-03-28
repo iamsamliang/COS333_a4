@@ -2,6 +2,7 @@ from os import path
 from sys import argv, stderr, exit
 from socket import socket, SOL_SOCKET, SO_REUSEADDR
 from pickle import dump, load
+from time import process_time
 from sqlite3 import connect
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame
 from PyQt5.QtWidgets import QLabel, QGridLayout, QPushButton
@@ -41,6 +42,12 @@ def handleOverviews(sock, cursor, args):
     dump(rows, out_flow)
     out_flow.flush()
 
+
+def consumeCpuTime(delay):
+    i = 0
+    initialTime = process_time()
+    while (process_time() - initialTime)
+        i += 1 # Do a nonsensical computation.
 
 # handle getDetails
 def handleDetails(sock, cursor, args):
@@ -112,11 +119,14 @@ def main(argv):
         description='Server for the registrar application', allow_abbrev=False)
     parser.add_argument(
         "port", type=int, help="the port at which the server should listen", nargs=1)
+    parser.add_argument(
+        "delay", type=int, help="the amount by which the server is delayed after a query is received", nargs=1)
     args = parser.parse_args()
 
     try:
         # make this server bind a socket to this port and listen for a connection from a client
         port = int(argv[1])
+        delay = int(argv[2])
         serverSock = socket()
         print('Opened server socket')
         serverSock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)

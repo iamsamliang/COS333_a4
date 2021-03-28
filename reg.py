@@ -62,8 +62,8 @@ class TextThread (Thread):
             print(f'{argv[0]}: {e}', file=stderr)
             if self._shouldStop:
                 return
-            # queue.put(False, "[Errno 111] Connection refused")
-            # self._queue.put((False, e))
+            queue.put(False, "[Errno 111] Connection refused")
+            self._queue.put((False, e))
 
 
 def main(argv):

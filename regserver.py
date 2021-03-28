@@ -198,7 +198,8 @@ def main(argv):
                     # print("Established Database Connection")
 
                     # Handle client request
-                    process = Process(target=handler, args=[sock, cursor, delay]
+                    process = Process(target=handler, args=[
+                                      sock, cursor, delay])
                     process.start()
 
                     # close database connection
@@ -213,9 +214,9 @@ def main(argv):
             # server error exception
             except Exception as e:
                 print(f'{argv[0]}: {e}', file=stderr)
-                message="A server error occurred. Please contact the system administrator."
-                out_flow=sock.makefile(mode="wb")
-                isSuccess=False
+                message = "A server error occurred. Please contact the system administrator."
+                out_flow = sock.makefile(mode="wb")
+                isSuccess = False
                 dump(isSuccess, out_flow)
                 dump(message, out_flow)
                 out_flow.flush()

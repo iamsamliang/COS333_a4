@@ -146,7 +146,7 @@ def main(argv):
     list_box.setFont(QFont("Courier", 10))
 
     # submit button
-    submit_but = QPushButton("Submit")
+   # submit_but = QPushButton("Submit")
 
     top_layout = QGridLayout()
     top_layout.setSpacing(0)
@@ -172,12 +172,12 @@ def main(argv):
     top_layout.addWidget(titleLine, 3, 1)
 
     # submit button
-    top_layout_right = QVBoxLayout()
-    top_layout_right.setSpacing(0)
-    top_layout_right.setContentsMargins(0, 0, 0, 0)
-    top_layout_right.addWidget(submit_but)
-    top_layout_right.setAlignment(Qt.AlignCenter)
-    top_layout.addLayout(top_layout_right, 0, 2, 4, 1)
+    # top_layout_right = QVBoxLayout()
+    # top_layout_right.setSpacing(0)
+    # top_layout_right.setContentsMargins(0, 0, 0, 0)
+    # top_layout_right.addWidget(submit_but)
+    # top_layout_right.setAlignment(Qt.AlignCenter)
+    # top_layout.addLayout(top_layout_right, 0, 2, 4, 1)
 
     # top layout frame
     top_frame = QFrame()
@@ -210,6 +210,7 @@ def main(argv):
     window.resize(screenSize.width()//2, screenSize.height()//2)
 
     window.show()
+    app.exec_()
 
     while True:
         try:
@@ -220,11 +221,15 @@ def main(argv):
             titleLine.returnPressed.connect(retrieveText)
 
             # retrieve values when submit button is clicked
-            submit_but.clicked.connect(retrieveText)
+            # submit_but.clicked.connect(retrieveText)
+            deptLine.textChanged.connect(retrieveText)
+            courseNumLine.textChanged.connect(retrieveText)
+            areaLine.textChanged.connect(retrieveText)
+            titleLine.textChanged.connect(retrieveText)
 
             # open details when user double clicks or hits enter on a list widget item
             list_box.itemActivated.connect(retrieveDetails)
-
+            
             # retrieveText()
 
             packet = ["overviews", "", "", "", ""]

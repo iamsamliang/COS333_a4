@@ -60,8 +60,6 @@ class TextThread (Thread):
             self._queue.put((isSuccess, db_rows))
         except Exception as e:
             # print(f'{argv[0]}: {e}', file=stderr)
-            if self._shouldStop:
-                return
             self._queue.put((False, "[Errno 111] Connection refused"))
 
 
@@ -253,46 +251,37 @@ def main(argv):
     window.show()
 
     while True:
-        try:
-            # retrieve values when enter is clicked in one of the line edits (unnecessary w/ text changed)
-            # deptLine.returnPressed.connect(retrieveText)
-            # courseNumLine.returnPressed.connect(retrieveText)
-            # areaLine.returnPressed.connect(retrieveText)
-            # titleLine.returnPressed.connect(retrieveText)
+        # retrieve values when enter is clicked in one of the line edits (unnecessary w/ text changed)
+        # deptLine.returnPressed.connect(retrieveText)
+        # courseNumLine.returnPressed.connect(retrieveText)
+        # areaLine.returnPressed.connect(retrieveText)
+        # titleLine.returnPressed.connect(retrieveText)
 
-            # retrieve values when submit button is clicked
-            # submit_but.clicked.connect(retrieveText)
-            deptLine.textChanged.connect(retrieveText)
-            courseNumLine.textChanged.connect(retrieveText)
-            areaLine.textChanged.connect(retrieveText)
-            titleLine.textChanged.connect(retrieveText)
+        # retrieve values when submit button is clicked
+        # submit_but.clicked.connect(retrieveText)
+        deptLine.textChanged.connect(retrieveText)
+        courseNumLine.textChanged.connect(retrieveText)
+        areaLine.textChanged.connect(retrieveText)
+        titleLine.textChanged.connect(retrieveText)
 
-            # open details when user double clicks or hits enter on a list widget item
-            list_box.itemActivated.connect(retrieveDetails)
+        # open details when user double clicks or hits enter on a list widget item
+        list_box.itemActivated.connect(retrieveDetails)
 
-            retrieveText()
-            # global textThread  # perhaps this should be deleted?
-            # if textThread is not None:
-            #     textThread.stop()
-            # packet = ["overviews", "", "", "", ""]
-            # textThread = TextThread(host, port, packet, queue)
-            # textThread.start()
+        retrieveText()
+        # global textThread  # perhaps this should be deleted?
+        # if textThread is not None:
+        #     textThread.stop()
+        # packet = ["overviews", "", "", "", ""]
+        # textThread = TextThread(host, port, packet, queue)
+        # textThread.start()
 
-            timer = QTimer()
-            timer.timeout.connect(pollQueue)
-            timer.setInterval(100)  # milliseconds
-            timer.start()
+        timer = QTimer()
+        timer.timeout.connect(pollQueue)
+        timer.setInterval(100)  # milliseconds
+        timer.start()
 
-            window.show()
-            exit(app.exec_())
-
-        # we may need to remove this.... error is handled in the text thread i think?
-        except Exception as e:
-            # display error of unavailable server
-            msgBox = QMessageBox.critical(
-                window, 'Server Error', str(e))
-            window.show()
-            exit(app.exec_())
+        window.show()
+        exit(app.exec_())
 
 
 if __name__ == '__main__':

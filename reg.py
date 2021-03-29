@@ -187,7 +187,7 @@ def main(argv):
         textThread.start()
 
     def retrieveDetails():
-        print("Sent command: getDetails")
+        print("Sent command: getDetail")
         # get the courseId from the selection
         selected_str = str(list_box.currentItem().text())
         # selection = selectedRow[0]

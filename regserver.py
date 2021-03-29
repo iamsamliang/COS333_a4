@@ -111,7 +111,7 @@ def handleOverviews(sock, delay, form_args):
 def handleDetails(sock, delay, class_id):
     try:
         print("Forked child process")
-        print("Received command: getDetails")
+        print("Received command: getDetail")
 
         consumeCpuTime(delay)
 
